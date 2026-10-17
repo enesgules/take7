@@ -7,6 +7,8 @@ import { Button } from "@base-ui/react/button";
 import { Icon } from "../components/Icon";
 import { Scene } from "../components/Scene";
 import { DecisionComparison } from "../components/DecisionComparison";
+import { StoryComposer } from "../components/StoryComposer";
+import { buildStoryArc } from "../lib/story";
 import { ThemePicker } from "../components/ThemePicker";
 import {
   downloadContactSheet,
@@ -37,6 +39,7 @@ type Modal =
   | "help"
   | "new"
   | "rename"
+  | "story"
   | null;
 type Connection = {
   ready: boolean;
@@ -295,7 +298,9 @@ function Studio() {
     } else
       updateTake({
         settings: next,
-        title: directions.find((d) => d.id === next.direction)!.name,
+        title: patch.direction
+          ? directions.find((d) => d.id === next.direction)!.name
+          : selected.title,
       });
   }
   function selectDirection(id: Settings["direction"]) {
@@ -862,7 +867,17 @@ function Studio() {
                           <Media take={t} small />
                         </button>
                         <div>
-                          <strong>{t.title}</strong>
+                          <button
+                            className="reel-edit-take"
+                            aria-label={`Edit ${t.title}`}
+                            onClick={() => {
+                              setProject({ ...project, selectedId: t.id });
+                              setView("studio");
+                            }}
+                          >
+                            <strong>{t.title}</strong>
+                            <span>Open in studio ↗</span>
+                          </button>
                           <p>
                             {t.settings.camera} · {t.settings.lens}
                           </p>
@@ -1209,6 +1224,24 @@ function Studio() {
                   </div>
                 </aside>
               </section>
+              <section className="story-invitation">
+                <div>
+                  <span className="eyebrow">FROM A FRAME TO A FILM</span>
+                  <h2>Give your scene somewhere to go.</h2>
+                  <p>
+                    Seven beats. A shared world. Choose the emotional journey,
+                    then direct every shot.
+                  </p>
+                </div>
+                <button
+                  className="button light"
+                  onClick={() => setModal("story")}
+                >
+                  <Icon name="film" />
+                  Build a story arc
+                  <Icon name="right" />
+                </button>
+              </section>
               <section className="exploration">
                 <Tabs.Root
                   value={tab}
@@ -1395,7 +1428,7 @@ function Studio() {
         <Dialog.Portal>
           <Dialog.Backdrop className="dialog-backdrop" />
           <Dialog.Popup
-            className={`dialog ${modal === "preview" || modal === "compare" ? "wide" : ""}`}
+            className={`dialog ${modal === "preview" || modal === "compare" || modal === "story" ? "wide" : ""}`}
           >
             <Dialog.Close
               className="dialog-close icon-button"
@@ -1639,6 +1672,39 @@ function Studio() {
                   others to see. Generated media stays with your private engine;
                   recipients render their own versions.
                 </p>
+              </>
+            )}
+            {modal === "story" && (
+              <>
+                <div className="eyebrow">SEVEN SHOTS. ONE SHARED WORLD.</div>
+                <Dialog.Title>Direct the emotional journey.</Dialog.Title>
+                <Dialog.Description>
+                  Turn the selected scene into an editable narrative sequence.
+                  Preview the beats before adding them to your board.
+                </Dialog.Description>
+                <StoryComposer
+                  available={Math.min(
+                    100 - project.takes.length,
+                    100 - project.sequence.length,
+                  )}
+                  onBuild={(id) => {
+                    try {
+                      setProject(buildStoryArc(project, selected, id));
+                      setModal(null);
+                      setPlayIndex(project.sequence.length);
+                      setView("sequence");
+                      notify(
+                        "Seven video drafts added to your reel. Review each shot before rendering.",
+                      );
+                    } catch (error) {
+                      notify(
+                        error instanceof Error
+                          ? error.message
+                          : "Could not build story.",
+                      );
+                    }
+                  }}
+                />
               </>
             )}
             {modal === "rename" && (

@@ -7,8 +7,11 @@ import {
   decodeShare,
   encodeShare,
   newProject,
+  newTake,
   type Project,
 } from "../src/lib/studio";
+
+import { storyArcs } from "../src/lib/story";
 
 // DOM interaction coverage; these tests do not replace real browser layout QA.
 const dom = new Window({ url: "http://localhost:3000/" });
@@ -456,5 +459,96 @@ test("reel stepping, jumping and reorder preserve the previewed take; leaving st
   fireEvent.click(nav.getByRole("button", { name: /Decision reel/ }));
   assert.ok(screen.getByRole("button", { name: "Play storyboard" }));
   assert.equal(screen.queryByRole("button", { name: "Pause" }), null);
+  cleanup();
+});
+
+test("story arc previews are local and build seven reproducible video drafts into the reel", async () => {
+  const project = newProject();
+  project.sequence = [project.selectedId];
+  project.takes[0].settings.seed = 777;
+  project.takes[0].settings.ratio = "9:16";
+  const source = project.takes[0];
+  await mount(project);
+  const initial = JSON.stringify(saved());
+  const originalFetch = globalThis.fetch;
+  const requests: unknown[] = [];
+  globalThis.fetch = async (...args) => {
+    requests.push(args);
+    return originalFetch(...args);
+  };
+  try {
+    fireEvent.click(screen.getByRole("button", { name: "Build a story arc" }));
+    const dialog = await screen.findByRole("dialog");
+    assert.ok(within(dialog).getByText(/Direct the emotional journey/));
+    for (const arc of storyArcs) {
+      fireEvent.click(
+        within(dialog).getByRole("button", { name: new RegExp(arc.name) }),
+      );
+      assert.equal(
+        within(dialog)
+          .getByRole("button", { name: new RegExp(arc.name) })
+          .getAttribute("aria-pressed"),
+        "true",
+      );
+      assert.ok(within(dialog).getByText(arc.beats[0].title));
+      assert.equal(
+        JSON.stringify(saved()),
+        initial,
+        "previewing must not modify the project",
+      );
+    }
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Create seven-shot story" }),
+    );
+    await waitFor(() => assert.equal(saved().takes.length, 8));
+    const result = saved();
+    assert.deepEqual(result.takes[0], JSON.parse(JSON.stringify(source)));
+    assert.deepEqual(result.sequence, [
+      source.id,
+      ...result.takes.slice(1).map((t) => t.id),
+    ]);
+    for (const take of result.takes.slice(1)) {
+      assert.equal(take.settings.kind, "video");
+      assert.equal(take.status, "draft");
+      assert.equal(take.settings.seed, source.settings.seed);
+      assert.equal(take.settings.ratio, source.settings.ratio);
+      assert.ok(take.settings.prompt.startsWith(source.settings.prompt));
+      assert.equal(take.parentId, source.id);
+      assert.equal(take.jobId, undefined);
+      assert.equal(take.output, undefined);
+    }
+    assert.ok(screen.getByRole("button", { name: "Play storyboard" }));
+    assert.equal(
+      screen
+        .getByRole("button", { name: "Jump to reel take 2" })
+        .getAttribute("aria-current"),
+      "step",
+    );
+    assert.equal(
+      requests.length,
+      0,
+      "authoring drafts must not request generation or incur provider usage",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    cleanup();
+  }
+});
+
+test("story arc build is disabled when the board cannot fit seven more drafts", async () => {
+  const project = newProject();
+  project.takes.push(
+    ...Array.from({ length: 93 }, () => newTake(project.takes[0].settings)),
+  );
+  await mount(project);
+  fireEvent.click(screen.getByRole("button", { name: "Build a story arc" }));
+  const build = await screen.findByRole("button", {
+    name: "Create seven-shot story",
+  });
+  assert.equal((build as HTMLButtonElement).disabled, true);
+  assert.ok(screen.getByText(/This board needs room for seven more takes/));
+  fireEvent.click(build);
+  assert.equal(saved().takes.length, 94);
+  assert.equal(saved().sequence.length, 0);
   cleanup();
 });

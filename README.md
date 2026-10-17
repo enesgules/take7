@@ -27,6 +27,12 @@ npm start
 
 Production needs a persistent, writable `TAKE7_DATA_DIR`, plus environment variables supplied by the host. See [setup](docs/SETUP.md) for credential handling and deployment requirements. This repository does not imply a publicly deployed app or a submitted competition entry.
 
+## Build a seven-shot story
+
+Choose **Build a story arc** to preview The threshold, One last move, or What stays. Each arc adds seven editable video drafts to your decision reel, preserving the selected scene, seed, and frame while adding distinct narrative beats and camera directions. Creating a story submits no renders. Open a reel card in the studio to edit it, export its Comfy workflow, or render it individually with a validated LTX engine.
+
+Continuity is text-guided, not reference-image conditioning or guaranteed character identity. See the [demo runbook](docs/DEMO.md) for GPU acceptance checks and the submission recording plan.
+
 ## Shape your board
 
 Click the project title in the top bar to rename it. The decision reel has a numbered timeline and previous/next controls for reviewing each four-second storyboard card. Reordering preserves the take you are previewing; leaving the reel pauses playback. This is a planning preview, not a stitched video export.

@@ -3201,3 +3201,131 @@ html[data-theme="soft"] .empty-state h3 {
     max-width: 150px;
   }
 }
+.story-invitation {
+  margin: 24px 0;
+  padding: 26px;
+  border: 1px solid var(--line);
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--accent) 7%, var(--panel)),
+    var(--panel)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.story-invitation h2 {
+  font: 500 25px var(--display);
+  letter-spacing: -1px;
+  margin: 12px 0 8px;
+}
+.story-invitation p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+.story-invitation .button {
+  flex-shrink: 0;
+}
+.story-choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 24px 0;
+}
+.story-choices button {
+  padding: 18px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.story-choices button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.story-choices strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.story-choices span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.story-beats {
+  padding: 0;
+  list-style: none;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.story-beats li {
+  display: flex;
+  gap: 18px;
+  padding: 15px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.story-beat-number {
+  font: 12px monospace;
+  color: var(--muted);
+  padding-top: 3px;
+}
+.story-beats strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.story-beats p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 6px 0;
+}
+.story-beats small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.story-contract {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+.story-contract svg {
+  flex-shrink: 0;
+}
+.story-contract p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+@media (max-width: 650px) {
+  .story-invitation {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
+  }
+  .story-choices {
+    grid-template-columns: 1fr;
+  }
+  .story-choices button {
+    padding: 12px;
+  }
+  .story-choices strong {
+    margin-bottom: 3px;
+  }
+}
+.reel-edit-take {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  text-align: left;
+  padding: 4px 0;
+}
+.reel-edit-take span {
+  font-size: 9px;
+  color: var(--muted);
+}
+.reel-edit-take:hover span {
+  text-decoration: underline;
+}
